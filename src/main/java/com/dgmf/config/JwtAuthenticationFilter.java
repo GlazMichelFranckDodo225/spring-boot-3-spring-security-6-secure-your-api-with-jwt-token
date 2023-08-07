@@ -36,6 +36,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 2. The « JwtAuthenticationFilter » checks if the Client
         // has a JWT Token or not, and extracts it if it is present.
         final String jwtToken = getTokenFromRequest(request);
+
+        // 3. If the JWT Token is missing (null)
+        if(jwtToken == null) {
+            // Passing the "Request" and the "Response" to the
+            // next Filter
+            filterChain.doFilter(request, response);
+
+            return;
+        }
     }
 
     // 2.
