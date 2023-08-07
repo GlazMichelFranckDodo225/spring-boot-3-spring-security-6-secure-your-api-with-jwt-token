@@ -37,7 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // has a JWT Token or not, and extracts it if it is present.
         final String jwtToken = getTokenFromRequest(request);
 
-        // 3. If the JWT Token is missing (null)
+        // 3. If the JWT Token is missing (null) ==> 403 response to
+        // the Client ==> "HTTP 403 - Missing JWT Token"
         if(jwtToken == null) {
             // Passing the "Request" and the "Response" to the
             // next Filter
