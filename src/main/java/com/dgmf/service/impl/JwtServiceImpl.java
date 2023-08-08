@@ -56,6 +56,25 @@ public class JwtServiceImpl implements JwtTokenProcessingService, JwtKeyProcessi
         return generateToken(new HashMap<>(), savedUser);
     }
 
+    @Override
+    public boolean isTokenValid(String jwtToken, UserDetails savedUser) { // J
+        // "username" ==> "userEmail"
+        final String username = getUsernameFromToken(jwtToken);
+
+        return (username.equals(savedUser.getUsername()) && !isTokenExpired(jwtToken));
+    }
+
+    @Override
+    public boolean isTokenExpired(String jwtToken) { // I
+        return getExpiration(jwtToken).before(new Date());
+    }
+
+    @Override
+    public Date getExpiration(String jwtToken) { // H
+        return getClaim(jwtToken, Claims::getExpiration);
+    }
+
+
     // 4 Retrieval of "username/email" (JWT subject)
     @Override // Extract all Claims
     public Claims getAllClaims(String jwtToken) { // B
