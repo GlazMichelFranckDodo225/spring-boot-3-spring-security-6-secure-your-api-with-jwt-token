@@ -1,5 +1,6 @@
 package com.dgmf.config;
 
+import com.dgmf.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,8 @@ every time the Application gets a Request
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final JwtService jwtService;
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -46,6 +49,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             return;
         }
+
+        /* 4. The JWT Token is present ==> Start of the Validation Process.
+                - 4.1 If "username/email" does not exist ==> 403 response
+                to the Client ==> "HTTP 403 - User does not exist"
+                - 4.2 Retrieval of "username/email" (JWT subject) based on
+                the JWT Token
+        In this Application, for the "UserDetails" Interface :
+        "username" <==> "userEmail"
+        */
+        final String userEmail = jwtService.getUsernameFromToken(jwtToken); // 4.2
     }
 
     // 2.
