@@ -76,8 +76,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             /* 6. Using the "UserDetailsService", we try to
             fetch User from the DB, based on the
             User "email/username" sets as a Claim or Token subject. */
-            UserDetails savedUser = userDetailsService
-                    .loadUserByUsername(userEmail);
+            UserDetails savedUser = userDetailsService.loadUserByUsername(userEmail);
+
+            /* 7. Using the "UserDetailsService", start of the
+            validation Process of the JWT Token for the specific User
+                - 7.1 If the JWT Token is not valid (is expired, is not
+                for the specific User, etc ...) ==> 403 response to
+                the Client ==> "HTTP 403 - Invalid JWT Token" */
+            // Check if the JWT token is valid or not
+            if(jwtService.isTokenValid(jwtToken, savedUser)) {
+                // 7.2 The JWT Token is valid ==> Setting up a Connected User
+                // Instantiation of a "UsernamePasswordAuthenticationToken"
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                savedUser,
+                                // We don't have credentials, we are creating
+                                // the User
+                                null,
+                                savedUser.getAuthorities());
+
+                // Add more details from the request
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request));
+
+                // 8. Update of the "SecurityContextHolder" with the
+                // "authToken" ==> For the rest of the other Filters, the
+                // User will now be considered authenticated
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
         }
     }
 
