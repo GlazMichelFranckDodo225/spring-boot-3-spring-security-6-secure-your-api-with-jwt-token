@@ -1,10 +1,14 @@
 package com.dgmf.service.impl;
 
 import java.security.Key;
+import java.util.Date;
+import java.util.Map;
 import java.util.function.Function;
 
 import com.dgmf.service.JwtKeyProcessingService;
 import com.dgmf.service.JwtTokenProcessingService;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -22,6 +26,25 @@ public class JwtServiceImpl implements JwtTokenProcessingService, JwtKeyProcessi
     @Override
     public String getUsernameFromToken(String jwtToken) { // A
         return getClaim(jwtToken, Claims::getSubject); // E
+    }
+
+    // To generate a JWT Token out of Extracted Claims and UserDetails
+    // Map<String, Object> contains the extracted Claims that
+    // we want to add
+    @Override
+    public String generateToken(
+            Map<String, Object> extraClaims, UserDetails userDetails) { // F
+        return Jwts
+                .builder()
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername()) // Username ==> UserEmail
+                // When the Claim was created, this will help to make calculations
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                // The JWT Token will be valid for 24 hours + 1000 milliseconds
+                .setExpiration(new Date( System.currentTimeMillis()+1000*60*24))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                // Generates and returns the JWT Token
+                .compact();
     }
 
     // 4 Retrieval of "username/email" (JWT subject)
