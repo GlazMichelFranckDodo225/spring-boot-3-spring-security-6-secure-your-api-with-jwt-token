@@ -30,4 +30,25 @@ public class AppConfig {
                         () -> new UsernameNotFoundException("User Not Found")
                 );
     }
+
+    // DAO Object which is responsible to fetch the "User Details"
+    // from the DB, to encode Password and so forth
+    @Bean
+    public AuthenticationProvider authenticationProvider() { // C
+        DaoAuthenticationProvider authenticationProvider =
+                new DaoAuthenticationProvider();
+        // Which User Details Service to use in order to fetch User
+        // Information (there are multiple implementations of "UserDetails")
+        // ==> Takes the one just above
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        // Which Password Encoder  to use ==> Takes the one just below
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+
+        return authenticationProvider;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() { // D
+        return new BCryptPasswordEncoder();
+    }
 }
