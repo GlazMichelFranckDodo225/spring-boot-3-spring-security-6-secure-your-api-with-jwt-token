@@ -8,4 +8,5 @@ public interface JwtTokenProcessingService {
     // 4.
     String getUsernameFromToken(String jwtToken);
     String generateToken(Map<String, Object> extraClaims, UserDetails savedUser);
+    String generateToken(UserDetails savedUser);
 }

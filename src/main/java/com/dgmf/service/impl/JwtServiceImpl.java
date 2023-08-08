@@ -2,6 +2,7 @@ package com.dgmf.service.impl;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -33,11 +34,11 @@ public class JwtServiceImpl implements JwtTokenProcessingService, JwtKeyProcessi
     // we want to add
     @Override
     public String generateToken(
-            Map<String, Object> extraClaims, UserDetails userDetails) { // F
+            Map<String, Object> extraClaims, UserDetails savedUser) { // F
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername()) // Username ==> UserEmail
+                .setSubject(savedUser.getUsername()) // Username ==> UserEmail
                 // When the Claim was created, this will help to make calculations
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 // The JWT Token will be valid for 24 hours + 1000 milliseconds
@@ -45,6 +46,14 @@ public class JwtServiceImpl implements JwtTokenProcessingService, JwtKeyProcessi
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 // Generates and returns the JWT Token
                 .compact();
+    }
+
+    // To generate a JWT Token without having Extracted
+    // Claims, just only using UserDetails itself
+    @Override
+    public String generateToken(UserDetails savedUser) { // G
+        // Assigning a Token to the saved User
+        return generateToken(new HashMap<>(), savedUser);
     }
 
     // 4 Retrieval of "username/email" (JWT subject)
