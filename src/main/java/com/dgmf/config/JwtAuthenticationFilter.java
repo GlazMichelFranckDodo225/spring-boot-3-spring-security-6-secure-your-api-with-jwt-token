@@ -8,6 +8,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -27,6 +32,7 @@ every time the Application gets a Request
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProcessingService jwtService;
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -59,6 +65,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         "username" <==> "userEmail"
         */
         final String userEmail = jwtService.getUsernameFromToken(jwtToken); // 4.2
+
+        /* 5. If getting User "username/email" from the DB is ok and
+        the User is not authenticated yet. Because if the User is
+        already authenticated, we don't need to perform all the checks
+        and updating the "SecurityContextHolder". We just need, in this
+        case, to pass the Request to the "DispatcherServlet" */
+        if(userEmail != null && SecurityContextHolder.getContext()
+                .getAuthentication() == null) {
+            /* 6. Using the "UserDetailsService", we try to
+            fetch User from the DB, based on the
+            User "email/username" sets as a Claim or Token subject. */
+            UserDetails savedUser = userDetailsService
+                    .loadUserByUsername(userEmail);
+        }
     }
 
     // 2.
