@@ -1,6 +1,6 @@
 package com.dgmf.service;
 
-public interface JwtService {
+public interface JwtTokenService {
     // 4.
     String getUsernameFromToken(String jwtToken);
 }
