@@ -4,7 +4,7 @@ import java.security.Key;
 import java.util.function.Function;
 
 import com.dgmf.service.JwtKeyProcessingService;
-import com.dgmf.service.JwtTokenService;
+import com.dgmf.service.JwtTokenProcessingService;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -13,14 +13,15 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 @Service
-public class JwtServiceImpl implements JwtTokenService, JwtKeyProcessingService {
+public class JwtServiceImpl implements JwtTokenProcessingService, JwtKeyProcessingService {
     private static final String SECRET_KEY = "d525f722439b5a9df23de67911200fd3a4ff692dc00363630034826edb925d84"; // C
 
-    // 4. Before implementing this method, need to
-    // the "Claims getAllClaims(String jwtToken)" Method
+    // 4. Retrieval of "username/email" (JWT subject)
+    // Before implementing this method, we need to implement
+    // the process to extract Claims
     @Override
     public String getUsernameFromToken(String jwtToken) { // A
-        return null;
+        return getClaim(jwtToken, Claims::getSubject); // E
     }
 
     // 4 Retrieval of "username/email" (JWT subject)

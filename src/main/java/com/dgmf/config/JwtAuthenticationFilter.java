@@ -1,6 +1,6 @@
 package com.dgmf.config;
 
-import com.dgmf.service.JwtTokenService;
+import com.dgmf.service.JwtTokenProcessingService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +26,7 @@ every time the Application gets a Request
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtTokenService jwtService;
+    private final JwtTokenProcessingService jwtService;
 
     @Override
     protected void doFilterInternal(
