@@ -31,6 +31,7 @@ public class AppConfig {
                 );
     }
 
+    // Bean of Type "AuthenticationProvider"
     // DAO Object which is responsible to fetch the "User Details"
     // from the DB, to encode Password and so forth
     @Bean
@@ -47,8 +48,20 @@ public class AppConfig {
         return authenticationProvider;
     }
 
+    // Bean of Type "PasswordEncoder"
     @Bean
     public PasswordEncoder passwordEncoder() { // D
         return new BCryptPasswordEncoder();
+    }
+
+    // Bean of Type "AuthenticationManager"
+    // The one responsible to manage Authentication
+    // The "AuthenticationConfiguration" holds the Information
+    // about the "AuthenticationManager"
+    @Bean
+    public AuthenticationManager authenticationManager( // E
+            AuthenticationConfiguration configuration) throws Exception
+    {
+        return configuration.getAuthenticationManager();
     }
 }
