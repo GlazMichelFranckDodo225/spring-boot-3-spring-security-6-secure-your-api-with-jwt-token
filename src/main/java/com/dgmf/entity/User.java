@@ -21,20 +21,22 @@ import java.util.List;
 @Table(
         name = "tbl_user",
         uniqueConstraints = {
+//                @UniqueConstraint(
+//                        name = "userUsername_unique", // Entity Attribute name
+//                        columnNames = "username" // DB Column name
+//                ),
                 @UniqueConstraint(
-                        name = "userUsername_unique", // Entity Attribute name
-                        columnNames = "username" // DB Column name
-                ),
-                @UniqueConstraint(
-                        name = "userEmail_unique", // Entity Attribute name
+                        name = "email_unique", // Entity Attribute name
                         columnNames = "email" // DB Column name
                 )
         }
 )
-public class User implements UserDetails { /* When Spring Security starts,
-and set up the application, it uses a "userDetails" object which comes from the
-"UserDetails" Interface that contains bunch of Methods. To use these Methods,
-implementing "UserDetails" Interface is requested */
+/* When Spring Security starts, and set up the application, it
+uses a "userDetails" object which comes from the "UserDetails"
+Interface that contains bunch of Methods. To use these Methods,
+implementing "UserDetails" Interface is requested
+*/
+public class User implements UserDetails {
     @Id
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
@@ -46,21 +48,21 @@ implementing "UserDetails" Interface is requested */
             allocationSize = 1
     )
     private Long id;
-    @Column(name = "first_name", nullable = false, length = 20)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
-    @Column(name = "last_name", nullable = false, length = 20)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
     // Pay attention to the designation "username" which has a
     // special meaning for the "UserDetails" Interface
-    @Column(name = "username", nullable = false, length = 20)
-    private String userUsername;
+//    @Column(name = "username", nullable = false, length = 20)
+//    private String userUsername;
 
-    @Column(name = "email", nullable = false, length = 50)
-    private String userEmail;
-    @Column(name = "password", nullable = false, length = 50)
-    private String userPassword;
+    @Column(name = "email", nullable = false)
+    private String email;
+    @Column(name = "password", nullable = false)
+    private String password;
     private boolean isActive = true;
-    @Column(name = "date_created", nullable = false)
+    @Column(name = "date_created")
     // Hibernate will automatically take the current Timestamp of the JVM
     @CreationTimestamp
     private LocalDateTime dateCreated;
@@ -73,7 +75,12 @@ implementing "UserDetails" Interface is requested */
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority((role.name())));
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 
     /* "username" and "password"
@@ -83,12 +90,8 @@ implementing "UserDetails" Interface is requested */
     */
     @Override
     public String getUsername() {
-        return userEmail;
-    }
-
-    @Override
-    public String getPassword() {
-        return userPassword;
+        // return userEmail;
+        return email;
     }
 
     @Override

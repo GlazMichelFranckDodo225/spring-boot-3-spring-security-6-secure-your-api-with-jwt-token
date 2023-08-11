@@ -7,10 +7,10 @@ import java.util.Map;
 
 public interface JwtTokenProcessingService {
     // 4.
-    String getUsernameFromToken(String jwtToken);
+    String extractUserEmailBasedOnJwtToken(String jwtToken);
     String generateToken(Map<String, Object> extraClaims, UserDetails savedUser);
     String generateToken(UserDetails savedUser);
     boolean isTokenValid(String jwtToken, UserDetails savedUser);
     boolean isTokenExpired(String token);
-    Date getExpiration(String token);
+    Date extractExpiration(String token);
 }

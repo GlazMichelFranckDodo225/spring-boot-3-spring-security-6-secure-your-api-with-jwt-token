@@ -13,9 +13,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-// Hold all Application configurations such as "Beans" and so forth
+// Holds all Application configurations such as "Beans" and so forth
 // At the startup, Spring pickup this Class, implement and inject all
-// declared inside
+// "Beans" declared inside
 @Configuration
 @RequiredArgsConstructor
 public class AppConfig {
@@ -24,11 +24,23 @@ public class AppConfig {
     // Bean of Type "UserDetailsService"
     @Bean
     public UserDetailsService userDetailsService() { // A
-        return username -> userRepository
-                .findByEmail(username) // "username" ==> "userEmail"
+        System.out.println("Stack Trace - AppConfig - userDetailsService()");
+
+        // return username -> userRepository
+        return email -> userRepository
+                // .findByUserEmail(username) // "username" ==> "userEmail"
+                .findByEmail(email) // "username" ==> "userEmail"
                 .orElseThrow(
                         () -> new UsernameNotFoundException("User Not Found")
                 );
+    }
+
+    // Bean of Type "PasswordEncoder"
+    @Bean
+    public PasswordEncoder passwordEncoder() { // D
+        System.out.println("Stack Trace - AppConfig - passwordEncoder()");
+
+        return new BCryptPasswordEncoder();
     }
 
     // Bean of Type "AuthenticationProvider"
@@ -36,32 +48,31 @@ public class AppConfig {
     // from the DB, to encode Password and so forth
     @Bean
     public AuthenticationProvider authenticationProvider() { // C
-        DaoAuthenticationProvider authenticationProvider =
+        DaoAuthenticationProvider authProvider =
                 new DaoAuthenticationProvider();
+
         // Which User Details Service to use in order to fetch User
-        // Information (there are multiple implementations of "UserDetails")
+        // Information (there are multiple implementations of "UserDetailsService")
         // ==> Takes the one just above
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        // Which Password Encoder  to use ==> Takes the one just below
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setUserDetailsService(userDetailsService());
+        // Which Password Encoder to use ==> Takes the one just below
+        authProvider.setPasswordEncoder(passwordEncoder());
 
-        return authenticationProvider;
+        System.out.println("Stack Trace - AppConfig - authenticationProvider()");
+
+        return authProvider;
     }
 
-    // Bean of Type "PasswordEncoder"
-    @Bean
-    public PasswordEncoder passwordEncoder() { // D
-        return new BCryptPasswordEncoder();
-    }
-
-    // Bean of Type "AuthenticationManager"
-    // The one responsible to manage Authentication
-    // The "AuthenticationConfiguration" holds the Information
-    // about the "AuthenticationManager"
+    /* Bean of Type "AuthenticationManager"
+    The one responsible to manage Authentication
+    The "AuthenticationConfiguration" holds the Information
+    about the "AuthenticationManager" */
     @Bean
     public AuthenticationManager authenticationManager( // E
             AuthenticationConfiguration configuration) throws Exception
     {
+        System.out.println("Stack Trace - AppConfig - authenticationManager()");
+
         return configuration.getAuthenticationManager();
     }
 }

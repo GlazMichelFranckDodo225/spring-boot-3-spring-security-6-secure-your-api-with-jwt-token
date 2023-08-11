@@ -34,9 +34,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                     authRequest -> authRequest
                         // Endpoints white list which do not require any
-                        // authentication or JWT Token
-                        .requestMatchers("").permitAll()
-                        // All the other Requests require authentication
+                        // authentication or JWT Token ==> All the Endpoints
+                        // inside the "AuthController" are authorized
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        // Authentication is required for all the other Requests
                         .anyRequest().authenticated()
                 )
                 /* "Session Management" Policy ==> Don't store "Authentication
@@ -51,12 +52,16 @@ public class SecurityConfig {
                 )
                 // Tells to Spring which "Authentication Provider" to use
                 .authenticationProvider(authenticationProvider)
-                // Allows adding a Filter before one of the known Filter classes
-                // Use "jwtAuthenticationFilter" before "UsernamePasswordAuthenticationFilter"
+                /* Allows adding a Filter before one of the known Filter classes.
+                We check everything, and then we set or update Security Context.
+                After all these points, we call "jwtAuthenticationFilter" before
+                "UsernamePasswordAuthenticationFilter" */
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
+
+        System.out.println("Stack Trace - SecurityConfig - securityFilterChain()");
 
         return http.build();
     }

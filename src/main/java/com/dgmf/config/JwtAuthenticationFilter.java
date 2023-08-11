@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,7 +30,7 @@ every time the Application gets a Request
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtTokenProcessingService jwtService;
+    private final JwtTokenProcessingService jwtTokenProcessingService;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -42,9 +41,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Contains the list of the Filters
             @NonNull FilterChain filterChain
         ) throws ServletException, IOException {
+        // To extract the jwtToken
+        final String jwtToken;
+        // To extract the User Email
+        final String userEmail;
+
         // 2. The « JwtAuthenticationFilter » checks if the Client
         // has a JWT Token or not, and extracts it if it is present.
-        final String jwtToken = getTokenFromRequest(request);
+        jwtToken = getTokenFromRequest(request);
 
         // 3. If the JWT Token is missing (null) ==> 403 response to
         // the Client ==> "HTTP 403 - Missing JWT Token"
@@ -52,6 +56,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Passing the "Request" and the "Response" to the
             // next Filter
             filterChain.doFilter(request, response);
+
+            System.out.println("Stack Trace - JwtAuthenticationFilter - doFilterInternal()");
 
             return;
         }
@@ -64,7 +70,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         In this Application, for the "UserDetails" Interface :
         "username" <==> "userEmail"
         */
-        final String userEmail = jwtService.getUsernameFromToken(jwtToken); // 4.2
+//        userEmail = jwtTokenProcessingService
+//                .getUsernameFromToken(jwtToken); // 4.2
+        // Here, The "User Email" has been retrieved
+        userEmail = jwtTokenProcessingService
+                .extractUserEmailBasedOnJwtToken(jwtToken); // 4.2
 
         /* 5. If getting User "username/email" from the DB is ok and
         the User is not authenticated yet. Because if the User is
@@ -76,24 +86,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             /* 6. Using the "UserDetailsService", we try to
             fetch User from the DB, based on the
             User "email/username" sets as a Claim or Token subject. */
-            UserDetails savedUser = userDetailsService.loadUserByUsername(userEmail);
+            UserDetails userDetails = userDetailsService
+                    .loadUserByUsername(userEmail);
 
             /* 7. Using the "UserDetailsService", start of the
             validation Process of the JWT Token for the specific User
                 - 7.1 If the JWT Token is not valid (is expired, is not
                 for the specific User, etc ...) ==> 403 response to
-                the Client ==> "HTTP 403 - Invalid JWT Token" */
+                the Client ==> "HTTP 403 - Invalid JWT Token"
+            */
             // Check if the JWT token is valid or not
-            if(jwtService.isTokenValid(jwtToken, savedUser)) {
+            if(jwtTokenProcessingService.isTokenValid(jwtToken, userDetails)) {
                 // 7.2 The JWT Token is valid ==> Setting up a Connected User
                 // Instantiation of a "UsernamePasswordAuthenticationToken"
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                savedUser,
+                                userDetails,
                                 // We don't have credentials, we are creating
                                 // the User
                                 null,
-                                savedUser.getAuthorities());
+                                userDetails.getAuthorities());
 
                 // Add more details from the request
                 authToken.setDetails(
@@ -114,14 +126,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 2.
     private String getTokenFromRequest(HttpServletRequest request) {
         // Retrieval of the "Authorization" Header
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        // final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        final String authHeader = request.getHeader("Authorization");
 
         // Checking if the "Authorization" Header contains the
         // "Bearer Token" (JWT Token)
         if(StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-            // If yes, returns "Bearer Token"
+            System.out.println("Stack Trace - JwtAuthenticationFilter - getTokenFromRequest() - 1");
+
+            // If yes, extracts and returns "Bearer Token"
             return authHeader.substring(7);
         }
+
+        System.out.println("Stack Trace - JwtAuthenticationFilter - getTokenFromRequest() - 2");
 
         // Return "null" if the "Bearer Token" is missing in
         // the "Authorization" Header
